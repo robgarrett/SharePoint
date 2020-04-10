@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="SPApps.UpdateAppCatWeb.Services.AppMgmtReceiver" CodeBehind="AppMgmtReceiver.svc.cs" %>

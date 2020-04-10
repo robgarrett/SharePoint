@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WEBAPI</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body style="display: none; overflow: auto;">
+    <!-- Chrome placeholder -->
+    <div id="chrome_ctrl_placeholder"></div>
+
+    <div class="body-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    @RenderBody()
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-12">
+                    <footer>
+                        <p>&copy; @DateTime.Now.Year - Rob Garrett</p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/knockout")
+    @Scripts.Render("~/bundles/spcontext")
+    @Scripts.Render("~/bundles/myApp")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

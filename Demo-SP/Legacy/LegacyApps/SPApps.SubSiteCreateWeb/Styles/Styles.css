@@ -1,0 +1,7 @@
+﻿.padded {
+    margin-left: 10px;
+}
+    .padded td {
+        padding-bottom: 5px;
+        padding-left: 10px;
+    }

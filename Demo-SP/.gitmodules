@@ -1,0 +1,3 @@
+[submodule "LowTrust/UserContext/ADAL"]
+	path = LowTrust/UserContext/ADAL
+	url = https://github.com/AzureAD/azure-activedirectory-library-for-dotnet.git

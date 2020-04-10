@@ -1,0 +1,101 @@
+﻿
+@model DemoAppWeb.Models.DemoDataModel
+
+@{
+    ViewBag.Title = "Demo SharePoint Provider-Hosted App";
+}
+
+<div class="jumbotron">
+    <h2>Welcome @ViewBag.UserName!</h2>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>Overview</h2>
+        <p>
+            This the home page of a Demo Provider-Hosted SharePoint App (aka Add-in).
+            This app was built using Visual Studio 2015 and uses MVC with Razor rendering engine, as part of ASP.NET 4.5.
+            For more information, please email me at <a href="mailto:rob@robgarrett.com">rob@robgarrett.com</a>.
+        </p>
+        <p>This app serves no real purpose, except to demomstrate:</p>
+        <ul>
+            <li>Creating a document library via CSOM.</li>
+            <li>Uploading text files.</li>
+            <li>Creating a list view of the created document library.</li>
+            <li>Creating an app page to list the contents of the library.</li>
+        </ul>
+        @if (!ViewBag.UserIsAdmin)
+        {
+            <p class="alert-danger">Current user is not a site admin! The above operations require site collection rights.</p>
+        }
+        else
+        {
+            <br />
+            using (Html.BeginForm("Submit", null, FormMethod.Post, new { @encType = "multipart/form-data" }))
+            {
+                @Html.Hidden("SPHostUrl", Model.SPHostUrl);
+                @Html.Hidden("SPLanguage", Model.SPLanguage);
+                @Html.Hidden("SPClientTag", Model.SPClientTag);
+                @Html.Hidden("SPProductNumber", Model.SPProductNumber);
+                if (Model.Messages.Count > 0)
+                {
+                    foreach (var m in Model.Messages)
+                    {
+                        if (m.Value == DemoAppWeb.Models.DemoDataModel.EventType.ERROR)
+                        {
+                            <p class="alert-danger">@m.Key</p>
+                        }
+                        else if (m.Value == DemoAppWeb.Models.DemoDataModel.EventType.INFO)
+                        {
+                            <p class="alert-success">@m.Key</p>
+                        }
+                        else if (m.Value == DemoAppWeb.Models.DemoDataModel.EventType.WARN)
+                        {
+                            <p class="alert-warning">@m.Key</p>
+                        }
+                    }
+                }
+                <div class="form-group">
+                    <label for="libName">Library Name:</label>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            @Html.TextBoxFor(m => m.DocumentLibraryName, new { @class = "form-control", @readonly = true })
+                            <span class="alert-danger">@Html.ValidationMessageFor(m => m.DocumentLibraryName)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="libName">View Name:</label>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            @Html.TextBoxFor(m => m.ViewName, new { @class = "form-control", @readonly = true })
+                            <span class="alert-danger">@Html.ValidationMessageFor(m => m.ViewName)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="libName">Page Name:</label>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            @Html.TextBoxFor(m => m.PageName, new { @class = "form-control" })
+                            <span class="alert-danger">@Html.ValidationMessageFor(m => m.PageName)</span>
+                        </div>
+                        <span class="col-sm-9">.aspx</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="file1">Filename 1:</label>
+                    <input type="file" name="file1" id="file1" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="file2">Filename 2:</label>
+                    <input type="file" name="file2" id="file2" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="file3">Filename 3:</label>
+                    <input type="file" name="file3" id="file3" class="form-control" />
+                </div>
+                <input type="submit" class="btn btn-default" value="Go" />
+            }
+        }
+    </div>
+</div>

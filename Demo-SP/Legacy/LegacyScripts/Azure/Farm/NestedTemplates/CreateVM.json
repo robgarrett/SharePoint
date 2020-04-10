@@ -1,0 +1,284 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"location": {
+			"type": "string",
+			"metadata": {
+				"description": "Datacenter location"
+			}
+		},
+		"storageAccountName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"allowedValues": [
+				"Standard_LRS",
+				"Standard_GRS"
+			],
+			"metadata": {
+				"description": "Type of storage account"
+			}
+		},
+		"publicIPAddressName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of Public IP address"
+			}
+		},
+		"publicIPAddressType": {
+			"type": "string",
+			"defaultValue": "Dynamic",
+			"allowedValues": [
+				"Dynamic"
+			],
+			"metadata": {
+				"description": "Type of Public Address"
+			}
+		},
+		"publicIPAddressDnsName": {
+			"type": "string",
+			"metadata": {
+				"description": "Public IP Address DNS Name"
+			}
+		},
+		"vmName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the VM"
+			}
+		},
+		"vmSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS1_V2",
+			"allowedValues": [
+				"Standard_DS1_V2",
+				"Standard_DS2_V2",
+				"Standard_DS3_V2",
+				"Standard_DS4_V2",
+				"Standard_DS5_V2"
+			],
+			"metadata": {
+				"description": "Size of the VM"
+			}
+		},
+		"imagePublisher": {
+			"type": "string",
+			"defaultValue": "MicrosoftWindowsServer",
+			"metadata": {
+				"description": "Image Publisher"
+			}
+		},
+		"imageOffer": {
+			"type": "string",
+			"defaultValue": "WindowsServer",
+			"metadata": {
+				"description": "Image Offer"
+			}
+		},
+		"imageSKU": {
+			"type": "string",
+			"defaultValue": "2012-R2-Datacenter",
+			"allowedValues": [
+				"2008-R2-SP1",
+				"2012-Datacenter",
+				"2012-R2-Datacenter"
+			],
+			"metadata": {
+				"description": "Image SKU"
+			}
+		},
+		"adminUserName": {
+			"type": "string",
+			"metadata": {
+				"description": "VM Admin Username"
+			}
+		},
+		"adminPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "VM Password"
+			}
+		},
+		"virtualNetworkName": {
+			"type": "string",
+			"metadata": {
+				"description": "VNET Name"
+			}
+		},
+		"virtualNetworkResourceGroup": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource Group VNET is deployed in"
+			}
+		},
+		"subnet1Name": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the subnet inside the VNET"
+			}
+		},
+		"nicName": {
+			"type": "string",
+			"metadata": {
+				"description": "Network Interface Name"
+			}
+		},
+		"dscUri": {
+			"type": "string",
+			"metadata": {
+				"description": "Uri for DSC script"
+			}
+		},
+		"configurationFunction": {
+			"type": "string",
+			"defaultValue": "Main.ps1\\Main",
+			"metadata": {
+				"description": "DSC Configuration Function"
+			}
+		},
+		"dscData": {
+			"type": "object",
+			"metadata": {
+				"description": "Data for DSC"
+			}
+		}
+	},
+	"variables": {
+		"vnetID": "[resourceId(parameters('virtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+		"subnet1Ref": "[concat(variables('vnetID'),'/subnets/', parameters('subnet1Name'))]"
+	},
+	"resources": [
+		{
+			"comments": "Storage Account",
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[parameters('storageAccountName')]",
+			"apiVersion": "2015-06-15",
+			"location": "[parameters('location')]",
+			"properties": {
+				"accountType": "[parameters('storageAccountType')]"
+			}
+		},
+		{
+			"comments": "VM Machine Public IP address",
+			"apiVersion": "2015-06-15",
+			"type": "Microsoft.Network/publicIPAddresses",
+			"name": "[parameters('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "[parameters('publicIPAddressType')]",
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('publicIPAddressDnsName')]"
+				}
+			}
+		},
+		{
+			"comments": "VM NIC",
+			"apiVersion": "2015-06-15",
+			"type": "Microsoft.Network/networkInterfaces",
+			"name": "[parameters('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressName'))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnet1Ref')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"comments": "Virtual Machine",
+			"apiVersion": "2015-06-15",
+			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[parameters('vmName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+				"[concat('Microsoft.Network/networkInterfaces/', parameters('nicName'))]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[parameters('vmName')]",
+					"adminUsername": "[parameters('adminUserName')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "[parameters('imagePublisher')]",
+						"offer": "[parameters('imageOffer')]",
+						"sku": "[parameters('imageSKU')]",
+						"version": "latest"
+					},
+					"osDisk": {
+						"name": "osdisk",
+						"vhd": {
+							"uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('vmName'), '-osdisk.vhd')]"
+						},
+						"caching": "ReadWrite",
+						"createOption": "FromImage"
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicName'))]"
+						}
+					]
+				}
+			},
+			"resources": [
+				{
+					"type": "extensions",
+					"name": "RunDSC",
+					"apiVersion": "2015-06-15",
+					"location": "[parameters('location')]",
+					"dependsOn": [
+						"[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+					],
+					"properties": {
+						"publisher": "Microsoft.Powershell",
+						"type": "DSC",
+						"typeHandlerVersion": "2.19",
+						"autoUpgradeMinorVersion": true,
+						"settings": {
+							"ModulesUrl": "[parameters('dscUri')]",
+							"ConfigurationFunction": "[parameters('configurationFunction')]",
+							"Properties": {
+								"Data": "[parameters('dscData')]",
+								"AdminCreds": {
+									"UserName": "[parameters('adminUserName')]",
+									"Password": "PrivateSettingsRef:AdminPassword"
+								}
+							}
+						},
+						"protectedSettings": {
+							"Items": {
+								"AdminPassword": "[parameters('adminPassword')]"
+							}
+						}
+					}
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,171 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"storageAccountName": {
+			"type": "string",
+			"defaultValue": "[concat('rdglab', toLower(replace(resourceGroup().name, ' ', '')))]",
+			"metadata": {
+				"description": "Name of storage account"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"allowedValues": [
+				"Standard_LRS",
+				"Standard_GRS"
+			],
+			"metadata": {
+				"description": "Type of storage account"
+			}
+		},
+		"adminUserName": {
+			"type": "string",
+			"metadata": {
+				"description": "Admin Username for VMs"
+			}
+		},
+		"adminPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "Admin Password for VMs"
+			}
+		},
+		"virtualNetworkName": {
+			"type": "string",
+			"metadata": {
+				"description": "VNET Name"
+			}
+		},
+		"virtualNetworkResourceGroup": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource Group VNET is deployed in"
+			}
+		},
+		"subnet1Name": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the subnet inside the VNET"
+			}
+		},
+		"_artifactsLocation": {
+			"type": "string",
+			"metadata": {
+				"description": "The location of resources, such as templates and DSC modules, that the template depends on"
+			}
+		},
+		"_artifactsLocationSasToken": {
+			"type": "securestring",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Auto-generated token to access _artifactsLocation"
+			}
+		}
+	},
+	"variables": {
+		"commonID": "[toLower(replace(resourceGroup().name, ' ', ''))]",
+		"prefix": "[concat('rdglab-', variables('commonID'))]",
+		"storageAccountName": "[concat('rdglab', variables('commonID'))]",
+		"dscUri": "[concat(parameters('_artifactsLocation'), '/DSC/package.zip', parameters('_artifactsLocationSasToken'))]",
+		"virtualMachineData": [
+			{
+				"name": "spwfe",
+				"pipName": "[concat(variables('commonID'), '-spwfe-pip')]",
+				"nicName": "[concat(variables('commonID'), '-spwfe-nic')]",
+				"vmName": "[concat(variables('commonID'), '-spwfe')]",
+				"dnsName": "[concat(variables('prefix'), '-spwfe')]",
+				"dscUri": "[replace(variables('dscUri'), 'package.zip', 'SPWFE.zip')]",
+				"dscData": {}
+			},
+			{
+				"name": "spapp",
+				"pipName": "[concat(variables('commonID'), '-spapp-pip')]",
+				"nicName": "[concat(variables('commonID'), '-spapp-nic')]",
+				"vmName": "[concat(variables('commonID'), '-spapp')]",
+				"dnsName": "[concat(variables('prefix'), '-spapp')]",
+				"dscUri": "[replace(variables('dscUri'), 'package.zip', 'SPAPP.zip')]",
+				"dscData": {}
+			},
+			{
+				"name": "sql",
+				"pipName": "[concat(variables('commonID'), '-sql-pip')]",
+				"nicName": "[concat(variables('commonID'), '-sql-nic')]",
+				"vmName": "[concat(variables('commonID'), '-sql')]",
+				"dnsName": "[concat(variables('prefix'), '-sql')]",
+				"dscUri": "[replace(variables('dscUri'), 'package.zip', 'SQL.zip')]",
+				"dscData": {}
+			}
+		]
+	},
+	"resources": [
+		{
+			"comments": "Storage Account",
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[parameters('storageAccountName')]",
+			"apiVersion": "2015-06-15",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"accountType": "[parameters('storageAccountType')]"
+			}
+		},
+		{
+			"name": "[concat('CreateVM', copyIndex())]",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2015-01-01",
+			"copy": {
+				"name": "vmCopy",
+				"count": "[length(variables('virtualMachineData'))]"
+			},
+			"properties": {
+				"mode": "Incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('_artifactsLocation'), '/NestedTemplates/CreateVM.json', parameters('_artifactsLocationSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"location": {
+						"value": "[resourceGroup().location]"
+					},
+					"storageAccountName": {
+						"value": "[variables('storageAccountName')]"
+					},
+					"publicIPAddressName": {
+						"value": "[variables('virtualMachineData')[copyIndex()].pipName]"
+					},
+					"publicIPAddressDnsName": {
+						"value": "[variables('virtualMachineData')[copyIndex()].dnsName]"
+					},
+					"nicName": {
+						"value": "[variables('virtualMachineData')[copyIndex()].nicName]"
+					},
+					"vmName": {
+						"value": "[variables('virtualMachineData')[copyIndex()].vmName]"
+					},
+					"dscUri": {
+						"value": "[variables('virtualMachineData')[copyIndex()].dscUri]"
+					},
+					"dscData": {
+						"value": "[variables('virtualMachineData')[copyIndex()].dscData]"
+					},
+					"adminUserName": {
+						"value": "[parameters('adminUsername')]"
+					},
+					"adminPassword": {
+						"value": "[parameters('adminPassword')]"
+					},
+					"virtualNetworkName": {
+						"value": "[parameters('virtualNetworkName')]"
+					},
+					"virtualNetworkResourceGroup": {
+						"value": "[parameters('virtualNetworkResourceGroup')]"
+					},
+					"subnet1Name": {
+						"value": "[parameters('subnet1Name')]"
+					}
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,24 @@
+<Project Title="Empty Site Template" UIVersion="15" Revision="0" xmlns="http://schemas.microsoft.com/sharepoint/">
+  <NavBars>
+  </NavBars>
+  <Configurations>
+    <Configuration ID="0" Name="EmptySite">
+      <Lists>
+      </Lists>
+      <SiteFeatures>
+        <!-- BasicWebParts Feature -->
+        <Feature ID="00BFEA71-1C5E-4A24-B310-BA51C3EB7A57" />
+        <!-- Three-state Workflow Feature -->
+        <Feature ID="FDE5D850-671E-4143-950A-87B473922DC7" />
+      </SiteFeatures>
+      <WebFeatures>
+        <!-- TeamCollab Feature -->
+        <Feature ID="00BFEA71-4EA5-48D4-A4AD-7EA5C011ABE5" />
+        <!-- WikiPageHomePage Feature -->
+        <Feature ID="00BFEA71-D8FE-4FEC-8DAD-01C19A6E4053" />
+        <!-- MDS -->
+        <Feature ID="87294C72-F260-42f3-A41B-981A2FFCE37A" />
+      </WebFeatures>
+    </Configuration>
+  </Configurations>
+</Project>

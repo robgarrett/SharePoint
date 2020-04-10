@@ -1,0 +1,21 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"adminUserName": {
+			"value": "rgarrett"
+		},
+		"adminPassword": {
+			"value": "pa$$w0rd1"
+		},
+		"virtualNetworkName": {
+			"value": "rdglab-vnet"
+		},
+		"virtualNetworkResourceGroup": {
+			"value": "Networking"
+		},
+		"subnet1Name": {
+			"value": "Subnet1"
+		}
+	}
+}

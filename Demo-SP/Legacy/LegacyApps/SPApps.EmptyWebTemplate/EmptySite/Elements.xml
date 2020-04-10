@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <WebTemplate
+    BaseTemplateID="1"
+    BaseTemplateName="STS"
+    BaseConfigurationID="0"
+    DisplayCategory="Custom Sites"
+    Name="EmptySite"
+    Title="Empty Site"
+    Locale="1033" />
+  <Module Name="EmptySite">
+    <File Path="EmptySite\onet.xml" Url="EmptySite/onet.xml" />
+  </Module>
+</Elements>
